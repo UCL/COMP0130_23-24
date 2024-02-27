@@ -59,12 +59,14 @@ for n = 1 : numberOfTimeSteps
     v{n}.setEstimate(zeros(4, 1));
 
     % Another way to do it would be to initialize from pairs of
-    % measurements. For example:    
+    % measurements. For example:
     %if (n == 1)
-    %    v{n}.setEstimate([z(1, 1); (z(1, 2)-z(1, 1)) / dT; z(2, 2); ]);
+    %    dz = z(:, 2) - z(:, 1);
     %else
-    %    v{n}.setEstimate([z(1, n); (z(n)-z(n-1)) / dT]);
+    %    dz = z(:, n) - z(:, n-1);
     %end
+    %dzdt = dz / dT;
+    %v{n}.setEstimate([z(1, n); dzdt(1); z(2, n); dzdt(2)]);
     
     % Added the vertex to the graph.
     graph.addVertex(v{n});
