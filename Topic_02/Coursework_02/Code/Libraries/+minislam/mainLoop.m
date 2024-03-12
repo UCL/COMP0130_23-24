@@ -25,6 +25,8 @@ end
 % Start the event generator
 eventGenerator.start();
 
+storeCount = 1;
+
 % Loop until we terminate
 while (eventGenerator.keepRunning() == true)
     
@@ -76,11 +78,25 @@ while (eventGenerator.keepRunning() == true)
     eventGenerator.step();
 end
 
-% Make sure the optimizer is run. Note we do this a bit inefficiently to
-% give feedback via the rendering
+% Handle the end of the run. If the graph can be optimized,
+
 for l = 1 : numLocalizationSystems
-    localizationSystems{l}.optimize(20);
-    [T, X, P] = localizationSystems{l}.platformEstimateHistory();
+    % Get the localization system
+    localizationSystem = localizationSystems{l};  
+    % If recommend optimization was true, we optimized the graph before the
+    % while loop ended and so there was nothing to do. Therfore, if
+    % recomment Optimization() is false, the localization system might
+    % contain additional vertices and edges which need optimizing. These
+    % final results are written into the position given by storeCount.
+    if (localizationSystem.recommendOptimization() == false)
+        tic
+        chi2 = localizationSystem.optimize(20);
+        results{l}.optimizationTimes(storeCount) = toc;
+        results{l}.chi2Time = cat(1, results{l}.chi2Time, ...
+            eventGenerator.time());
+        results{l}.chi2History = cat(1, results{l}.chi2History, chi2);
+    end
+    [T, X, P] = localizationSystem.platformEstimateHistory();
     results{l}.vehicleStateTime = T;
     results{l}.vehicleStateHistory = X;
     results{l}.vehicleCovarianceHistory = P;
